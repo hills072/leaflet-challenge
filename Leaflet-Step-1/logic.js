@@ -19,6 +19,7 @@ d3.json(queryUrl).then(function (data) {
         "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
     }
 
+    //define marker color
     function markerColor(depth) {
       switch (true) {
         case depth < 0:
@@ -37,6 +38,7 @@ d3.json(queryUrl).then(function (data) {
 
     }
 
+    //define marker radius
     function markerRadius(magnitude) {
       if (magnitude === 0) {
         return 1;
@@ -64,9 +66,6 @@ d3.json(queryUrl).then(function (data) {
       },
       onEachFeature: onEachFeature
     });
-
-    // Sending our earthquakes layer to the createMap function
-    // createMap(earthquakes);
 
     // Define streetmap and darkmap layers
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
