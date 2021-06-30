@@ -1,21 +1,3 @@
-
-// var myMap = L.map("map").setView([39.8283, -98.5795], 5);
-
-// // Add a tile layer (the background map image) to our map
-// // Use the addTo method to add objects to our map
-// L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-//   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
-//   tileSize: 512,
-//   maxZoom: 18,
-//   zoomOffset: -1,
-//   id: "mapbox/streets-v11",
-//   accessToken: API_KEY
-// }).addTo(myMap);
-
-
-
-
-
 // Store our API endpoint inside queryUrl
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
@@ -24,6 +6,7 @@ d3.json(queryUrl).then(function(data) {
   // Once we get a response, send the data.features object to the createFeatures function
   console.log(data);
   console.log(data.features);
+
   createFeatures(data.features);
 });
 
@@ -32,13 +15,52 @@ function createFeatures(earthquakeData) {
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3>" + feature.properties.place +
+
+      layer.bindPopup("<h3>" + feature.properties.place +
       "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+  }
+
+  function markerColor(depth) {
+    switch (true) {
+      case depth < 0:
+        return "lightgreen";
+      case depth < 10:
+        return "lime";
+      case depth < 20:
+        return "yellow";
+      case depth < 30:
+        return "orange";
+      case depth < 60:
+        return "red";
+    }
+  
+  }
+
+  function markerRadius(magnitude) {
+    if (magnitude === 0) {
+      return 1;
+    }
+    return magnitude * 4;
   }
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
   var earthquakes = L.geoJSON(earthquakeData, {
+
+    pointToLayer: function(earthquakeData, latlng) {
+
+      return L.circleMarker(latlng, {
+
+        opacity: 1,
+        fillOpacity: 1,
+        radius: markerRadius(earthquakeData.properties.mag),
+        color: "white",
+        weight: 1,
+        fillColor: markerColor(earthquakeData.geometry.coordinates[2]),
+        stroke: true,
+        
+      });
+    },
     onEachFeature: onEachFeature
   });
 
@@ -58,24 +80,6 @@ function createMap(earthquakes) {
     accessToken: API_KEY
   });
 
-  var darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "dark-v10",
-    accessToken: API_KEY
-  });
-
-  // Define a baseMaps object to hold our base layers
-  var baseMaps = {
-    "Street Map": streetmap,
-    "Dark Map": darkmap
-  };
-
-  // Create overlay object to hold our overlay layer
-  var overlayMaps = {
-    Earthquakes: earthquakes
-  };
-
   // Create our map, giving it the streetmap and earthquakes layers to display on load
   var myMap = L.map("map", {
     center: [
@@ -84,54 +88,4 @@ function createMap(earthquakes) {
     zoom: 5,
     layers: [streetmap, earthquakes]
   });
-
-  // Create a layer control
-  // Pass in our baseMaps and overlayMaps
-  // Add the layer control to the map
-  L.control.layers(baseMaps, overlayMaps, {
-    collapsed: false
-  }).addTo(myMap);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//   for (var i = 0; i < earthquakes.length; i++) {
-//     coord = earthquakes[i].geometry.coordinates;
-//     console.log(coord);
-    
-//     circles = L.circle(coord), {
-//       color: "green",
-//       fillColor: "green",
-//       fillOpacity: 0.75,
-//       radius: 500
-//     };
-//     circles.addTo(myMap);
-
-//   }
-// });
-// function createFeatures(earthquakeData) {
-
-//   // Define a function we want to run once for each feature in the features array
-//   // Give each feature a popup describing the place and time of the earthquake
-//   function onEachFeature(feature, layer) {
-
-//   }
-
-//   // Create a GeoJSON layer containing the features array on the earthquakeData object
-//   // Run the onEachFeature function once for each piece of data in the array
-//   var earthquakes = L.geoJSON(earthquakeData, {
-//     onEachFeature: onEachFeature
-//   });
-
-// //   createMap(earthquakes);
-// }
-
